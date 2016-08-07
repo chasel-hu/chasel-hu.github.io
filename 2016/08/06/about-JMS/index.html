@@ -84,12 +84,16 @@
 
 
 
-<meta property="og:type" content="website">
-<meta property="og:title" content="Hexo">
-<meta property="og:url" content="http://yoursite.com/index.html">
+<meta name="description" content="最近看了ActiveMq实现消息中间件的一些资料，网上的中文博客比较零零碎碎，所以就整理了出来了比较基本的用法，希望能所收获。ActiveMq是Apache的一个开源项目，能支撑很强大的消息通信，对于中小型的企业来说，activeMq是能胜任作为消息中间件的。在下载的activeMq中，官方也给出了一个非常简单的例子，能实现普通的消息发送和接受。但是对于离线消息的接收上，很多地方都是一笔带过。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="JMS离线消息的接收和发送">
+<meta property="og:url" content="http://yoursite.com/2016/08/06/about-JMS/index.html">
 <meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="最近看了ActiveMq实现消息中间件的一些资料，网上的中文博客比较零零碎碎，所以就整理了出来了比较基本的用法，希望能所收获。ActiveMq是Apache的一个开源项目，能支撑很强大的消息通信，对于中小型的企业来说，activeMq是能胜任作为消息中间件的。在下载的activeMq中，官方也给出了一个非常简单的例子，能实现普通的消息发送和接受。但是对于离线消息的接收上，很多地方都是一笔带过。">
+<meta property="og:updated_time" content="2016-08-07T15:43:52.531Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Hexo">
+<meta name="twitter:title" content="JMS离线消息的接收和发送">
+<meta name="twitter:description" content="最近看了ActiveMq实现消息中间件的一些资料，网上的中文博客比较零零碎碎，所以就整理了出来了比较基本的用法，希望能所收获。ActiveMq是Apache的一个开源项目，能支撑很强大的消息通信，对于中小型的企业来说，activeMq是能胜任作为消息中间件的。在下载的activeMq中，官方也给出了一个非常简单的例子，能实现普通的消息发送和接受。但是对于离线消息的接收上，很多地方都是一笔带过。">
 
 
 
@@ -110,9 +114,9 @@
 
 
 
-  <link rel="canonical" href="http://yoursite.com/"/>
+  <link rel="canonical" href="http://yoursite.com/2016/08/06/about-JMS/"/>
 
-  <title> Hexo </title>
+  <title> JMS离线消息的接收和发送 | Hexo </title>
 </head>
 
 <body itemscope itemtype="http://schema.org/WebPage" lang="">
@@ -133,9 +137,7 @@
     
   
 
-  <div class="container one-collumn sidebar-position-left 
-   page-home 
- ">
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
     <div class="headband"></div>
 
     <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
@@ -212,9 +214,9 @@
         <div class="content-wrap">
           <div id="content" class="content">
             
-  <section id="posts" class="posts-expand">
+
+  <div id="posts" class="posts-expand">
     
-      
 
   
   
@@ -234,10 +236,7 @@
             
             
               
-                
-                <a class="post-title-link" href="/2016/08/06/about-JMS/" itemprop="url">
-                  JMS离线消息的接收和发送
-                </a>
+                JMS离线消息的接收和发送
               
             
           </h1>
@@ -277,9 +276,7 @@
       
 
       
-        
-          
-            <p>　　最近看了ActiveMq实现消息中间件的一些资料，网上的中文博客比较零零碎碎，所以就整理了出来了比较基本的用法，希望能所收获。ActiveMq是Apache的一个开源项目，能支撑很强大的消息通信，对于中小型的企业来说，activeMq是能胜任作为消息中间件的。在下载的activeMq中，官方也给出了一个非常简单的例子，能实现普通的消息发送和接受。但是对于离线消息的接收上，很多地方都是一笔带过。所以我希望自己记录下使用的过程，以及prefetch的使用和含义。</p>
+        <p>　　最近看了ActiveMq实现消息中间件的一些资料，网上的中文博客比较零零碎碎，所以就整理了出来了比较基本的用法，希望能所收获。ActiveMq是Apache的一个开源项目，能支撑很强大的消息通信，对于中小型的企业来说，activeMq是能胜任作为消息中间件的。在下载的activeMq中，官方也给出了一个非常简单的例子，能实现普通的消息发送和接受。但是对于离线消息的接收上，很多地方都是一笔带过。所以我希望自己记录下使用的过程，以及prefetch的使用和含义。</p>
 <h2 id="1-离线消息"><a href="#1-离线消息" class="headerlink" title="1.离线消息"></a>1.离线消息</h2><p>　　消息离线对于不同的消息队列来说，实现方式是不同的。比较简单的是点对点的情况下，只要实现简单的持久化就可以了，而且，ActiveMq默认是对消息进行持久化的。但是笔者在编写代码的时候，却遇到了一个小小的坑。看下面的代码<br>生成者代码<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">initSender</span><span class="params">()</span></span>&#123;</div><div class="line">	<span class="keyword">try</span>&#123;</div><div class="line">		connectionFactory = <span class="keyword">new</span> ActiveMQConnectionFactory(AmqUtil.userName,AmqUtil.password,AmqUtil.brokerUrl);</div><div class="line">		connection = connectionFactory.createConnection();</div><div class="line">		connection.start();</div><div class="line"></div><div class="line">		<span class="comment">// 根据type的类型来选择创建的类型和是否开启事务，在选择queue的时候不开启事务</span></div><div class="line">		<span class="keyword">if</span>(type == AmqObject.TOPIC_TYPE)&#123;</div><div class="line">			session = connection.createSession(Boolean.TRUE, Session.AUTO_ACKNOWLEDGE);</div><div class="line">			destination = session.createTopic(mqName);</div><div class="line">		&#125;<span class="keyword">else</span> <span class="keyword">if</span>(type == AmqObject.QUEUE_TYPE)&#123;</div><div class="line">			session = connection.createSession(Boolean.FALSE, Session.AUTO_ACKNOWLEDGE);</div><div class="line">			destination = session.createQueue(mqName);</div><div class="line">		&#125;<span class="keyword">else</span>&#123;</div><div class="line">			<span class="keyword">throw</span> <span class="keyword">new</span> Exception(<span class="string">" 输入的类型不对 "</span>);</div><div class="line">		&#125;</div><div class="line">		producer = session.createProducer(destination);</div><div class="line">	&#125;<span class="keyword">catch</span> (Exception e) &#123;</div><div class="line">		e.printStackTrace();</div><div class="line">	&#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
 <p>消费者代码，监听器只是纯粹的处理消息。<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">initReceiver</span><span class="params">()</span></span>&#123;</div><div class="line">	<span class="keyword">try</span>&#123;</div><div class="line">		connectionFactory = <span class="keyword">new</span> ActiveMQConnectionFactory(AmqUtil.userName,AmqUtil.password,AmqUtil.brokerUrl);</div><div class="line">		connection = connectionFactory.createConnection();</div><div class="line">		connection.start();</div><div class="line">			</div><div class="line">		<span class="comment">//根据不同的类型创建不同的mq队列，再使用queue的时候，选择不开启事务</span></div><div class="line">		<span class="keyword">if</span>(type == AmqObject.QUEUE_TYPE)&#123;</div><div class="line">			session = connection.createSession(Boolean.FALSE, Session.AUTO_ACKNOWLEDGE);</div><div class="line">			Queue queue = <span class="keyword">new</span> ActiveMQQueue(mqName + <span class="string">"?consumer.prefetchSize="</span> + prefetchSize);</div><div class="line">			consumer = session.createConsumer(queue,selector);</div><div class="line">		&#125;<span class="keyword">else</span> <span class="keyword">if</span>(type == AmqObject.TOPIC_TYPE)&#123;</div><div class="line">			session = connection.createSession(Boolean.TRUE, Session.AUTO_ACKNOWLEDGE);</div><div class="line">			Topic topic = <span class="keyword">new</span> ActiveMQTopic(mqName + <span class="string">"?consumer.prefetchSize="</span> + prefetchSize);</div><div class="line">			consumer = session.createConsumer(topic,selector);</div><div class="line">		&#125;<span class="keyword">else</span>&#123;</div><div class="line">			<span class="keyword">throw</span> <span class="keyword">new</span> Exception(<span class="string">" 输入的类型不对 "</span>);</div><div class="line">		&#125;</div><div class="line">		<span class="comment">//设置默认的监听器</span></div><div class="line">		consumer.setMessageListener(<span class="keyword">new</span> DefaultListener());</div><div class="line">	&#125;<span class="keyword">catch</span> (Exception e) &#123;</div><div class="line">		e.printStackTrace();</div><div class="line">	&#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
 <p>　　在运行这段代码之后，消费者离线之后，生产者将消息发送到队列之后，在消费者启动之后，的确能接收到消息，但是，消费者会接受所有的消息，包括历史上已经接收过的消息。查阅了相关资料之后才了解到，这是因为，我在创建session的时候，使用的时候开启事务的方式，而在接受消息的时候，并没有调用session.commit()。这样，就导致了即使消费者已经接受到消息了，在队列眼里，消费者没有提交事务，则说明没有接收消息成功，下次启动接着发。在了解到这个问题之后，我采用的方法是在创建点对点的消息队列时，采用将事务关闭的session。在国外一个论坛上也了解到，他们也建议在创建点对点消息队列的时候，不开启事务。</p>
@@ -290,16 +287,20 @@
 <h2 id="3-附带彩蛋"><a href="#3-附带彩蛋" class="headerlink" title="3.    附带彩蛋"></a>3.    附带彩蛋</h2><p>　　ActiveMq配置jdbc，其实网上很多的例子，但是有个地方要注意，很多人采用的是dbcp1.x，所以在创建数据源的时候，用的是class=”org.apache.commons.dbcp.BasicDataSource”。但是，如果你下载的是2.x的版本的话，则要改成class=”org.apache.commons.dbcp2.BasicDataSource”；</p>
 <p>　　以上就是我在配置和使用的过程中遇到的小坑和小问题，其实多查查资料就能解决的，记下来也方便自己查看。</p>
 
-          
+      
+    </div>
+
+    <div>
+      
         
+
       
     </div>
 
     <div>
       
-    </div>
+        
 
-    <div>
       
     </div>
 
@@ -310,16 +311,15 @@
 
       
       
-        <div class="post-eof"></div>
-      
     </footer>
   </article>
 
 
-    
-  </section>
 
-  
+    <div class="post-spread">
+      
+    </div>
+  </div>
 
 
           </div>
@@ -327,6 +327,10 @@
 
 
           
+  <div class="comments" id="comments">
+    
+  </div>
+
 
         </div>
         
@@ -346,8 +350,17 @@
       
 
       
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            Inhaltsverzeichnis
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            Übersicht
+          </li>
+        </ul>
+      
 
-      <section class="site-overview sidebar-panel  sidebar-panel-active ">
+      <section class="site-overview sidebar-panel ">
         <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
           <img class="site-author-image" itemprop="image"
                src="/images/avatar.gif"
@@ -383,6 +396,17 @@
 
       </section>
 
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-离线消息"><span class="nav-number">1.</span> <span class="nav-text">1.离线消息</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-关于prefetch"><span class="nav-number">2.</span> <span class="nav-text">2.    关于prefetch</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-附带彩蛋"><span class="nav-number">3.</span> <span class="nav-text">3.    附带彩蛋</span></a></li></ol></div>
+            
+          </div>
+        </section>
       
 
     </div>
@@ -479,6 +503,10 @@
   
 
   
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.0.1"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.0.1"></script>
+
+
 
   
 
